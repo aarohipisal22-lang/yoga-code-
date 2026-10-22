@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 260" role="img" aria-label="Triangle Pose illustration">
+<title>Triangle Pose</title>
+<rect width="200" height="260" rx="18" fill="#FFF6EF"/>
+<line x1="20" y1="240" x2="180" y2="240" stroke="#E8D5CB" stroke-width="4" stroke-linecap="round"/>
+<g fill="none" stroke="#FF6F61" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+  <polyline points="42,75 100,124"/>
+  <polyline points="30,89 54,61"/>
+  <polyline points="30,89 40,140 46,192"/>
+  <polyline points="54,61 55,32 56,10"/>
+  <polyline points="94,126 70,182 48,236"/>
+  <polyline points="106,126 130,182 154,236"/>
+  <polyline points="94,126 106,126"/>
+  <circle cx="24" cy="62" r="16" fill="#FFE1DA"/>
+</g>
+<g fill="#E8503F">
+  <circle cx="40" cy="140" r="4.5"/>
+  <circle cx="55" cy="32" r="4.5"/>
+  <circle cx="70" cy="182" r="4.5"/>
+  <circle cx="130" cy="182" r="4.5"/>
+</g>
+</svg>

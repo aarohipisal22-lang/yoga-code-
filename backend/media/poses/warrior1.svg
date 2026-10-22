@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 260" role="img" aria-label="Warrior I illustration">
+<title>Warrior I</title>
+<rect width="200" height="260" rx="18" fill="#FFF6EF"/>
+<line x1="20" y1="240" x2="180" y2="240" stroke="#E8D5CB" stroke-width="4" stroke-linecap="round"/>
+<g fill="none" stroke="#FF6F61" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+  <polyline points="100,62 100,142"/>
+  <polyline points="82,72 118,72"/>
+  <polyline points="82,72 86,44 97,14"/>
+  <polyline points="118,72 114,44 103,14"/>
+  <polyline points="92,142 60,192 56,236"/>
+  <polyline points="108,142 138,192 164,236"/>
+  <polyline points="92,142 108,142"/>
+  <circle cx="100" cy="46" r="16" fill="#FFE1DA"/>
+</g>
+<g fill="#E8503F">
+  <circle cx="86" cy="44" r="4.5"/>
+  <circle cx="114" cy="44" r="4.5"/>
+  <circle cx="60" cy="192" r="4.5"/>
+  <circle cx="138" cy="192" r="4.5"/>
+</g>
+</svg>

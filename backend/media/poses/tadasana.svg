@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 260" role="img" aria-label="Mountain Pose illustration">
+<title>Mountain Pose</title>
+<rect width="200" height="260" rx="18" fill="#FFF6EF"/>
+<line x1="20" y1="240" x2="180" y2="240" stroke="#E8D5CB" stroke-width="4" stroke-linecap="round"/>
+<g fill="none" stroke="#FF6F61" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+  <polyline points="100,58 100,134"/>
+  <polyline points="78,68 122,68"/>
+  <polyline points="78,68 72,100 70,130"/>
+  <polyline points="122,68 128,100 130,130"/>
+  <polyline points="92,134 92,186 92,236"/>
+  <polyline points="108,134 108,186 108,236"/>
+  <polyline points="92,134 108,134"/>
+  <circle cx="100" cy="40" r="16" fill="#FFE1DA"/>
+</g>
+<g fill="#E8503F">
+  <circle cx="72" cy="100" r="4.5"/>
+  <circle cx="128" cy="100" r="4.5"/>
+  <circle cx="92" cy="186" r="4.5"/>
+  <circle cx="108" cy="186" r="4.5"/>
+</g>
+</svg>

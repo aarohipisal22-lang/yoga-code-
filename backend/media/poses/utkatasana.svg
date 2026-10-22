@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 260" role="img" aria-label="Chair Pose illustration">
+<title>Chair Pose</title>
+<rect width="200" height="260" rx="18" fill="#FFF6EF"/>
+<line x1="20" y1="240" x2="180" y2="240" stroke="#E8D5CB" stroke-width="4" stroke-linecap="round"/>
+<g fill="none" stroke="#FF6F61" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+  <polyline points="104,92 84,166"/>
+  <polyline points="106,100 150,58"/>
+  <polyline points="84,166 132,192 102,236"/>
+  <polyline points="70,236 134,236"/>
+  <circle cx="110" cy="74" r="16" fill="#FFE1DA"/>
+</g>
+<g fill="#E8503F">
+  <circle cx="132" cy="192" r="4.5"/>
+</g>
+</svg>

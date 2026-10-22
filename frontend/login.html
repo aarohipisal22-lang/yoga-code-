@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yoga-Code AI: Log in</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+<main class="auth-card">
+  <div class="text-center mb-3">
+    <div class="brand"><i class="fa-solid fa-spa me-2"></i>Yoga-Code AI</div>
+    <p class="text-muted small mb-0">Your real-time AI yoga coach. Log in to continue, or create an account if you're new.</p>
+  </div>
+  <ul class="nav nav-pills nav-fill auth-tabs mb-3">
+    <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tabLogin" type="button">Log in</button></li>
+    <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tabRegister" type="button" id="tabRegisterBtn">Sign up</button></li>
+  </ul>
+  <div id="authError" class="alert alert-danger py-2 small d-none" role="alert"></div>
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="tabLogin">
+      <form id="loginForm">
+        <div class="mb-3"><label class="form-label" for="loginId">Email or username</label><input id="loginId" class="form-control" autocomplete="username" required></div>
+        <div class="mb-3"><label class="form-label" for="loginPassword">Password</label><input id="loginPassword" type="password" class="form-control" autocomplete="current-password" required></div>
+        <button class="btn btn-brand w-100" type="submit">Log in</button>
+      </form>
+    </div>
+    <div class="tab-pane fade" id="tabRegister">
+      <form id="registerForm">
+        <div class="mb-3"><label class="form-label" for="regUsername">Username</label><input id="regUsername" class="form-control" minlength="3" maxlength="30" pattern="[A-Za-z0-9_.]+" autocomplete="username" required><div class="form-text">3 to 30 letters, numbers, dots or underscores.</div></div>
+        <div class="mb-3"><label class="form-label" for="regEmail">Email</label><input id="regEmail" type="email" class="form-control" autocomplete="email" required></div>
+        <div class="mb-3"><label class="form-label" for="regPassword">Password</label><input id="regPassword" type="password" class="form-control" minlength="8" maxlength="128" autocomplete="new-password" required><div class="form-text">At least 8 characters.</div></div>
+        <button class="btn btn-brand w-100" type="submit">Create account</button>
+      </form>
+    </div>
+  </div>
+  <p class="small text-muted mt-3 mb-0"><i class="fa-solid fa-shield-halved me-1" style="color:var(--primary)"></i>Camera video never leaves your device. We store your account, health answers and session summaries so your progress is there next time.</p>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/common.js"></script>
+<script>
+const err = document.getElementById('authError');
+const go = (u) => { location.replace(u.onboarded ? '/index.html' : '/onboarding.html'); };
+// Already logged in? Skip straight ahead.
+api('/me').then((r) => { if (r.user) go(r.user); }).catch(() => showError(err, 'Cannot reach the server. Start it with: python server.py'));
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault(); showError(err, '');
+  try { go((await api('/auth/login', { method: 'POST', json: { email: loginId.value, password: loginPassword.value } })).user); }
+  catch (ex) { showError(err, ex.message); }
+});
+document.getElementById('registerForm').addEventListener('submit', async (e) => {
+  e.preventDefault(); showError(err, '');
+  try { go((await api('/auth/register', { method: 'POST', json: { username: regUsername.value, email: regEmail.value, password: regPassword.value } })).user); }
+  catch (ex) { showError(err, ex.message); }
+});
+</script>
+</body>
+</html>

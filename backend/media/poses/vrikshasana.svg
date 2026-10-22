@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 260" role="img" aria-label="Tree Pose illustration">
+<title>Tree Pose</title>
+<rect width="200" height="260" rx="18" fill="#FFF6EF"/>
+<line x1="20" y1="240" x2="180" y2="240" stroke="#E8D5CB" stroke-width="4" stroke-linecap="round"/>
+<g fill="none" stroke="#FF6F61" stroke-width="7" stroke-linecap="round" stroke-linejoin="round">
+  <polyline points="100,58 100,134"/>
+  <polyline points="80,68 120,68"/>
+  <polyline points="80,68 84,96 99,86"/>
+  <polyline points="120,68 116,96 101,86"/>
+  <polyline points="94,134 94,186 94,236"/>
+  <polyline points="106,134 140,170 97,160"/>
+  <polyline points="94,134 106,134"/>
+  <circle cx="100" cy="40" r="16" fill="#FFE1DA"/>
+</g>
+<g fill="#E8503F">
+  <circle cx="84" cy="96" r="4.5"/>
+  <circle cx="116" cy="96" r="4.5"/>
+  <circle cx="94" cy="186" r="4.5"/>
+  <circle cx="140" cy="170" r="4.5"/>
+</g>
+</svg>

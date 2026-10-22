@@ -1,0 +1,158 @@
+[
+  {
+    "key": "tadasana",
+    "name": "Tadasana",
+    "english": "Mountain Pose",
+    "category": "Grounding",
+    "categoryClass": "grounding",
+    "icon": "fa-mountain",
+    "description": "The foundation of every standing pose — trains even weight, a long spine, and calm focus.",
+    "holdTarget": 20,
+    "rowLabels": [
+      "Left Leg",
+      "Right Leg",
+      "Spine Alignment",
+      "Shoulder Level",
+      "Arms at Sides",
+      "Head Alignment"
+    ],
+    "instructions": [
+      "Stand with feet together or hip-width apart, weight spread evenly across both feet.",
+      "Engage your thighs and lift your kneecaps slightly, without locking your knees.",
+      "Lengthen your spine and reach the crown of your head toward the ceiling.",
+      "Relax your shoulders down, away from your ears.",
+      "Let your arms rest naturally by your sides, palms facing forward."
+    ],
+    "image": "/media/poses/tadasana.svg"
+  },
+  {
+    "key": "vrikshasana",
+    "name": "Vrikshasana",
+    "english": "Tree Pose",
+    "category": "Balance",
+    "categoryClass": "balance",
+    "icon": "fa-tree",
+    "description": "Tests balance, leg strength, and hip alignment by standing tall on one leg.",
+    "holdTarget": 20,
+    "rowLabels": [
+      "Standing Leg",
+      "Folded Leg",
+      "Foot Placement",
+      "Spine Alignment",
+      "Shoulder Level",
+      "Head Alignment"
+    ],
+    "instructions": [
+      "Start standing tall in Tadasana, then shift your weight onto one leg.",
+      "Bend your other knee and place the sole of that foot on your inner calf or inner thigh — never on the knee.",
+      "Press your foot and standing leg together to find balance.",
+      "Keep your hips level and facing forward.",
+      "Bring your hands to your heart, or raise them overhead once you feel steady."
+    ],
+    "image": "/media/poses/vrikshasana.svg"
+  },
+  {
+    "key": "trikonasana",
+    "name": "Trikonasana",
+    "english": "Triangle Pose",
+    "category": "Stretch",
+    "categoryClass": "stretch",
+    "icon": "fa-arrows-left-right",
+    "description": "A wide standing stretch that opens the hips, hamstrings, and side body.",
+    "holdTarget": 15,
+    "rowLabels": [
+      "Stance Width",
+      "Leg Extension",
+      "Side Stretch",
+      "Arm Extension",
+      "Arm Direction",
+      "Head Alignment"
+    ],
+    "instructions": [
+      "Step your feet wide apart, about one leg's length.",
+      "Turn your front foot to point forward, and angle your back foot slightly inward.",
+      "Extend both arms out to shoulder height.",
+      "Hinge at your front hip and reach your front hand toward your shin, ankle, or the floor.",
+      "Stretch your other arm straight up, stacking your shoulders and keeping your chest open."
+    ],
+    "image": "/media/poses/trikonasana.svg"
+  },
+  {
+    "key": "warrior1",
+    "name": "Virabhadrasana I",
+    "english": "Warrior I",
+    "category": "Strength",
+    "categoryClass": "strength",
+    "icon": "fa-shield-halved",
+    "description": "A grounded lunge with arms overhead — builds leg strength and an open chest.",
+    "holdTarget": 15,
+    "rowLabels": [
+      "Front Leg",
+      "Back Leg",
+      "Torso Square",
+      "Arms Overhead",
+      "Arms Straight",
+      "Head Alignment"
+    ],
+    "instructions": [
+      "Step one foot back into a wide, deep lunge.",
+      "Bend your front knee to about a right angle, keeping it stacked above your ankle.",
+      "Straighten your back leg and press your back heel toward the floor.",
+      "Square your hips and chest toward the front of your mat.",
+      "Raise both arms straight overhead, reaching up alongside your ears."
+    ],
+    "image": "/media/poses/warrior1.svg"
+  },
+  {
+    "key": "utkatasana",
+    "name": "Utkatasana",
+    "english": "Chair Pose",
+    "category": "Strength",
+    "categoryClass": "strength",
+    "icon": "fa-chair",
+    "description": "An imaginary chair sit that builds heat and strength through the legs and core.",
+    "holdTarget": 15,
+    "rowLabels": [
+      "Knee Bend",
+      "Even Weight",
+      "Torso Lean",
+      "Arms Overhead",
+      "Arms Straight",
+      "Head Alignment"
+    ],
+    "instructions": [
+      "Stand with your feet together or hip-width apart.",
+      "Bend your knees and sit your hips back, as if lowering into an invisible chair.",
+      "Keep your knees behind your toes and your weight in your heels.",
+      "Lengthen your spine forward slightly, without rounding your back.",
+      "Raise both arms overhead, reaching up alongside your ears."
+    ],
+    "image": "/media/poses/utkatasana.svg"
+  },
+  {
+    "key": "warrior2",
+    "name": "Virabhadrasana II",
+    "english": "Warrior II",
+    "category": "Strength",
+    "categoryClass": "strength",
+    "icon": "fa-fist-raised",
+    "description": "A wide, powerful stance with arms extended — builds stamina and hip opening.",
+    "holdTarget": 15,
+    "rowLabels": [
+      "Front Leg",
+      "Back Leg",
+      "Hips Level",
+      "Arms Extended",
+      "Arm Symmetry",
+      "Head Alignment"
+    ],
+    "instructions": [
+      "Step your feet wide apart into a strong stance.",
+      "Turn your front foot forward and bend that knee to about a right angle.",
+      "Keep your back leg straight and strong.",
+      "Extend both arms out to shoulder height, front arm reaching over your front leg.",
+      "Turn your head to gaze out over your front hand."
+    ],
+    "image": "/media/poses/warrior2.svg"
+  }
+]

@@ -1,0 +1,1505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yoga-Code: Real-Time AI Posture Correction</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Google Fonts: Fraunces for display headings, Manrope for UI/body -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- MediaPipe Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+
+    <style>
+        :root{
+            --bg:#FFF6EF;
+            --surface:#FFFFFF;
+            --surface-soft:#FFE8DC;
+            --ink:#4A2E2A;
+            --ink-muted:#9A7A73;
+            --primary:#FF6F61;
+            --primary-dark:#E8503F;
+            --primary-soft:#FFE1DA;
+            --accent:#FF9F1C;
+            --accent-soft:#FFEBCC;
+            --pink:#FF4D8D;
+            --pink-soft:#FFDCEA;
+            --good:#4CAF6D;
+            --good-soft:#E4F6E9;
+            --warn:#F2A93B;
+            --warn-soft:#FFF0D6;
+            --bad:#F0396B;
+            --bad-soft:#FFE1EA;
+            --balance:#E85D9C;
+            --balance-soft:#FFE3F0;
+            --radius-sm:10px;
+            --radius-md:16px;
+            --radius-lg:22px;
+            --shadow-sm:0 1px 3px rgba(74,46,42,0.08);
+            --shadow-md:0 10px 30px rgba(74,46,42,0.14);
+            --font-display:'Fraunces', Georgia, serif;
+            --font-body:'Manrope', -apple-system, sans-serif;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg);
+            color: var(--ink);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        h1, h2, h3, h4, h5, h6 { font-family: var(--font-display); color: var(--ink); }
+
+        a { color: var(--primary); }
+
+        /* Navbar */
+        .site-navbar {
+            background: var(--surface);
+            border-bottom: 1px solid rgba(74,46,42,0.08);
+        }
+        .navbar-brand {
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 1.35rem;
+            color: var(--primary-dark) !important;
+            letter-spacing: -0.01em;
+        }
+        .navbar-brand i { color: var(--accent); }
+        .sdg-pill {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            background: var(--primary-soft);
+            padding: 6px 14px;
+            border-radius: 999px;
+        }
+
+        /* Hero */
+        .hero-section {
+            background: var(--surface-soft);
+            border-radius: var(--radius-lg);
+            padding: 36px 40px;
+            margin: 28px 0 30px;
+            border-bottom: 3px solid var(--accent);
+        }
+        .hero-section h1 {
+            font-size: 2.35rem;
+            font-weight: 600;
+            line-height: 1.15;
+            color: var(--primary-dark);
+        }
+        .hero-section p.lead {
+            color: var(--ink-muted);
+            font-size: 1.02rem;
+            max-width: 46ch;
+        }
+        .metric-box {
+            background: var(--surface);
+            padding: 12px 16px;
+            border-radius: var(--radius-sm);
+            box-shadow: var(--shadow-sm);
+            text-align: center;
+            min-width: 104px;
+        }
+        .metric-box small {
+            color: var(--ink-muted);
+            font-weight: 700;
+            font-size: 0.65rem;
+            letter-spacing: 0.03em;
+        }
+        .timer-display {
+            font-family: var(--font-display);
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+        }
+
+        /* Cards */
+        .panel-card {
+            background: var(--surface);
+            border-radius: var(--radius-md);
+            border: none;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+        .panel-card-header {
+            padding: 14px 20px;
+            font-weight: 700;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary-dark);
+            background: var(--primary-soft);
+        }
+        .panel-card-header.dark {
+            background: var(--primary-dark);
+            color: #fff;
+        }
+        .panel-card-body { padding: 18px 20px; }
+
+        /* Pose selector cards */
+        .pose-card {
+            width: 100%;
+            text-align: left;
+            background: var(--surface);
+            border: 1.5px solid rgba(74,46,42,0.10);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: border-color 0.15s ease, background 0.15s ease;
+        }
+        .pose-card:last-child { margin-bottom: 0; }
+        .pose-card:hover { border-color: var(--primary); }
+        .pose-card.active {
+            border-color: var(--primary);
+            background: var(--primary-soft);
+        }
+        .pose-card h6 { font-family: var(--font-body); font-weight: 700; font-size: 0.95rem; margin: 0; }
+        .pose-card-icon { color: var(--primary); }
+        .cat-badge {
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+        .cat-grounding { background: var(--primary-soft); color: var(--primary-dark); }
+        .cat-balance { background: var(--balance-soft); color: var(--balance); }
+        .cat-stretch { background: var(--accent-soft); color: #B36B00; }
+        .cat-strength { background: var(--pink-soft); color: #C22368; }
+
+        /* Instructions */
+        #poseInstructionsList { padding-left: 1.2rem; margin-bottom: 0; }
+        #poseInstructionsList li { margin-bottom: 6px; font-size: 0.92rem; color: var(--ink); }
+        .hold-target-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--accent-soft);
+            color: #B36B00;
+            font-weight: 700;
+            font-size: 0.8rem;
+            padding: 5px 12px;
+            border-radius: 999px;
+            margin-bottom: 12px;
+        }
+
+        /* Metrics table */
+        .metrics-table th {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: var(--ink-muted);
+            border-bottom: 1.5px solid rgba(74,46,42,0.10);
+            font-weight: 700;
+        }
+        .metrics-table td { vertical-align: middle; font-size: 0.9rem; border-color: rgba(74,46,42,0.07); }
+        .badge-good { background: var(--good-soft); color: var(--good); font-weight: 700; }
+        .badge-warn { background: var(--warn-soft); color: var(--warn); font-weight: 700; }
+        .badge-bad { background: var(--bad-soft); color: var(--bad); font-weight: 700; }
+        .badge-waiting { background: #EDEAE1; color: var(--ink-muted); font-weight: 700; }
+
+        /* Guidance banner */
+        .guidance-banner {
+            padding: 14px 16px;
+            border-radius: var(--radius-sm);
+            border-left: 4px solid var(--ink-muted);
+            background: #F3F1EA;
+            transition: background 0.2s ease, border-color 0.2s ease;
+        }
+        .guidance-banner.state-good { background: var(--good-soft); border-left-color: var(--good); }
+        .guidance-banner.state-warn { background: var(--warn-soft); border-left-color: var(--warn); }
+        .guidance-banner.state-bad { background: var(--bad-soft); border-left-color: var(--bad); }
+        .guidance-banner h6 { font-size: 0.92rem; margin-bottom: 4px; }
+        .guidance-banner ul { padding-left: 1.1rem; margin-bottom: 0; }
+        .guidance-banner ul li { font-size: 0.85rem; }
+
+        /* Camera panel */
+        .camera-card { box-shadow: var(--shadow-md); }
+        .camera-header {
+            background: var(--primary-dark);
+            color: #fff;
+            padding: 14px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+        }
+        .camera-stage {
+            background: #241811;
+            padding: 20px;
+            min-height: 420px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+        .video-container {
+            position: relative;
+            width: 100%;
+            max-width: 640px;
+            margin: 0 auto;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            background-color: #000;
+        }
+        #webcam { width: 100%; height: auto; display: block; transform: scaleX(-1); }
+        #output_canvas {
+            position: absolute; left: 0; top: 0; width: 100%; height: 100%;
+            transform: scaleX(-1);
+            pointer-events: none;
+        }
+        .loading-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(36,24,17,0.94);
+            color: #fff;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 10; text-align: center; padding: 20px; border-radius: var(--radius-md);
+        }
+        .loading-overlay p { color: rgba(255,255,255,0.65); }
+        .camera-footer {
+            background: var(--surface-soft);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-brand {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+            font-weight: 700;
+            border-radius: var(--radius-sm);
+        }
+        .btn-brand:hover { background: var(--primary-dark); border-color: var(--primary-dark); color: #fff; }
+        .btn-outline-brand {
+            border: 1.5px solid rgba(255,255,255,0.5);
+            color: #fff;
+            border-radius: var(--radius-sm);
+        }
+        .btn-outline-brand:hover { background: rgba(255,255,255,0.15); color: #fff; }
+
+        @media (max-width: 767px) {
+            .hero-section { padding: 24px 22px; text-align: center; }
+            .hero-section h1 { font-size: 1.7rem; }
+            .hero-section .metric-row { justify-content: center !important; margin-top: 16px; }
+            .camera-stage { min-height: 320px; padding: 12px; }
+        }
+    </style>
+    <link rel="stylesheet" href="css/extras.css">
+</head>
+<body>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg site-navbar">
+        <div class="container py-2">
+            <a class="navbar-brand" href="#"><i class="fa-solid fa-spa me-2"></i>Yoga-Code AI</a>
+            <span class="sdg-pill ms-auto">
+                <i class="fa-solid fa-circle-check me-1"></i> SDG 3: Good Health &amp; Well-being
+            </span>
+            <div id="authArea" class="ms-3"></div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Hero Header -->
+        <div class="hero-section row align-items-center g-3">
+            <div class="col-md-8">
+                <h1>Your real-time AI yoga coach</h1>
+                <p class="lead">Turn on your camera and practice with instant feedback on your alignment. Pose tracking runs privately in your browser, and your camera video is never recorded or uploaded. Your practice history is saved to your account.</p>
+            </div>
+            <div class="col-md-4">
+                <div class="d-flex flex-wrap justify-content-md-end gap-2 metric-row">
+                    <div class="metric-box">
+                        <small class="d-block text-uppercase">Session</small>
+                        <div id="timer" class="timer-display">00:00</div>
+                    </div>
+                    <div class="metric-box">
+                        <small class="d-block text-uppercase">Hold Streak</small>
+                        <div id="holdTimer" class="timer-display" style="color:var(--accent);">0s</div>
+                    </div>
+                    <div class="metric-box">
+                        <small class="d-block text-uppercase">Best Hold</small>
+                        <div id="bestHoldDisplay" class="timer-display" style="color:var(--balance);">0s</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 pb-5">
+
+            <!-- Column 1: Pose Selector & Instructions -->
+            <div class="col-lg-3 order-3 order-lg-1">
+
+                <div class="panel-card mb-4">
+                    <div class="panel-card-header">
+                        <i class="fa-solid fa-person-walking"></i>Choose Your Pose
+                    </div>
+                    <div class="panel-card-body">
+                        <div id="poseList"></div>
+                    </div>
+                </div>
+
+                <div class="panel-card">
+                    <div class="panel-card-header">
+                        <i class="fa-solid fa-book-open"></i><span id="poseInstructionsTitle">How to Practice</span>
+                    </div>
+                    <div class="panel-card-body">
+                        <img id="poseImage" class="pose-illustration d-none" alt="">
+                        <p id="poseDescription" class="text-muted small mb-2"></p>
+                        <span id="poseHoldTarget" class="hold-target-chip"><i class="fa-regular fa-clock"></i></span>
+                        <ol id="poseInstructionsList"></ol>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 2: Camera View Panel -->
+            <div class="col-lg-6 order-1 order-lg-2">
+                <div class="panel-card camera-card h-100">
+                    <div class="camera-header">
+                        <span><i class="fa-solid fa-camera me-2"></i>Live Webcam Skeleton Tracking</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <button id="voiceToggleBtn" class="btn btn-sm btn-outline-brand" onclick="toggleVoice()" title="Toggle voice coaching">
+                                <i class="fa-solid fa-volume-high"></i>
+                            </button>
+                            <span id="fpsCounter" class="badge" style="background:rgba(255,255,255,0.15);">FPS: 0</span>
+                        </div>
+                    </div>
+                    <div class="camera-stage">
+
+                        <!-- Initial Action Screen overlay inside camera box -->
+                        <div id="cameraPrompt" class="loading-overlay text-center">
+                            <i class="fa-solid fa-video-slash fa-3x mb-3" style="color:rgba(255,255,255,0.4);"></i>
+                            <h4 class="text-white">Webcam Access Needed</h4>
+                            <p class="px-4 small">This app reads your camera feed entirely inside your browser to map your joints. Your video never leaves your device. If you are logged in, only a short summary of each session is saved.</p>
+                            <button class="btn btn-brand btn-lg px-4" onclick="initiateWebcam()">
+                                <i class="fa-solid fa-video me-2"></i>Allow Camera &amp; Start
+                            </button>
+                        </div>
+
+                        <!-- Active Processing Loader Overlay -->
+                        <div id="aiLoadingOverlay" class="loading-overlay text-center d-none">
+                            <div class="spinner-border mb-3" style="color:var(--accent);" role="status"></div>
+                            <h5 class="text-white">Loading AI Model…</h5>
+                            <p class="small">Setting up on-device pose tracking.</p>
+                        </div>
+
+                        <!-- Video/Canvas Processing Layer -->
+                        <div class="video-container">
+                            <video id="webcam" autoplay playsinline muted></video>
+                            <canvas id="output_canvas"></canvas>
+                        </div>
+
+                    </div>
+                    <div class="camera-footer">
+                        <small class="text-muted"><i class="fa-solid fa-shield-halved me-1" style="color:var(--primary);"></i> Video stays on your device</small>
+                        <button id="stopBtn" class="btn btn-outline-danger btn-sm d-none" onclick="stopWebcam()">
+                            <i class="fa-solid fa-power-off me-1"></i>Stop Camera
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Column 3: Live Alignment — sits right next to the video for easy checking -->
+            <div class="col-lg-3 order-2 order-lg-3">
+                <div class="panel-card h-100">
+                    <div class="panel-card-header dark">
+                        <i class="fa-solid fa-chart-simple"></i>Your Live Alignment
+                    </div>
+                    <div class="panel-card-body">
+                        <div class="mb-2">
+                            <label class="fw-bold text-muted small d-block">Currently Practicing</label>
+                            <span id="targetPoseLabel" class="h6 fw-bold" style="color:var(--primary);">—</span>
+                        </div>
+                        <hr>
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle metrics-table mb-3">
+                                <thead>
+                                    <tr>
+                                        <th>Checkpoint</th>
+                                        <th>Angle</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="metricsTableBody"></tbody>
+                            </table>
+                        </div>
+
+                        <!-- Real-time Guidance Feedback -->
+                        <div id="guidanceBanner" class="guidance-banner">
+                            <h6 class="fw-bold mb-1"><i class="fa-solid fa-comment-medical me-2"></i>Live AI Guidance</h6>
+                            <p id="aiGuidanceText" class="small mb-0 text-muted">Stand in full view of the camera to start tracking your posture.</p>
+                        </div>
+                        <div class="mt-3 d-flex flex-column gap-1 small text-muted">
+                            <span><i class="fa-solid fa-trophy me-1" style="color:var(--accent);"></i>Holds completed: <strong id="completedHoldsCount">0</strong></span>
+                            <span style="font-size:0.75rem;"><i class="fa-solid fa-microphone-lines me-1"></i>Voice coaching on</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index:2000">
+        <div id="appToast" class="toast align-items-center border-0" role="status" aria-live="polite">
+            <div class="d-flex"><div id="appToastBody" class="toast-body"></div>
+            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button></div>
+        </div>
+    </div>
+
+    <!-- Login / Sign up -->
+    <div class="modal fade" id="authModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Save your practice</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+        <div class="modal-body">
+          <ul class="nav nav-pills auth-tabs mb-3" role="tablist">
+            <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tabLogin" type="button">Log in</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tabRegister" type="button">Sign up</button></li>
+          </ul>
+          <div id="authError" class="alert alert-danger py-2 small d-none" role="alert"></div>
+          <div class="tab-content">
+            <div class="tab-pane fade show active" id="tabLogin">
+              <form id="loginForm">
+                <div class="mb-3"><label class="form-label small fw-bold" for="loginEmail">Email</label><input id="loginEmail" type="email" class="form-control" autocomplete="email" required></div>
+                <div class="mb-3"><label class="form-label small fw-bold" for="loginPassword">Password</label><input id="loginPassword" type="password" class="form-control" autocomplete="current-password" required></div>
+                <button class="btn btn-brand w-100" type="submit">Log in</button>
+              </form>
+            </div>
+            <div class="tab-pane fade" id="tabRegister">
+              <form id="registerForm">
+                <div class="mb-3"><label class="form-label small fw-bold" for="regName">Name</label><input id="regName" class="form-control" maxlength="60" autocomplete="name" required></div>
+                <div class="mb-3"><label class="form-label small fw-bold" for="regEmail">Email</label><input id="regEmail" type="email" class="form-control" autocomplete="email" required></div>
+                <div class="mb-3"><label class="form-label small fw-bold" for="regPassword">Password</label><input id="regPassword" type="password" class="form-control" minlength="8" maxlength="128" autocomplete="new-password" required><div class="form-text">At least 8 characters.</div></div>
+                <button class="btn btn-brand w-100" type="submit">Create account</button>
+              </form>
+            </div>
+          </div>
+          <p class="small text-muted mt-3 mb-0"><i class="fa-solid fa-shield-halved me-1" style="color:var(--primary)"></i>We store your profile, session summaries and photos you choose to upload. Camera video is never sent.</p>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- Progress dashboard -->
+    <div class="modal fade" id="dashModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-dialog-scrollable"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">My progress</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+        <div class="modal-body">
+          <div class="row g-3 mb-4">
+            <div class="col-6 col-md-3"><div class="stat-card"><strong id="statSessions">0</strong><small>Sessions</small></div></div>
+            <div class="col-6 col-md-3"><div class="stat-card"><strong id="statMinutes">0</strong><small>Minutes</small></div></div>
+            <div class="col-6 col-md-3"><div class="stat-card"><strong id="statStreak">0</strong><small>Day streak</small></div></div>
+            <div class="col-6 col-md-3"><div class="stat-card"><strong id="statBest">0s</strong><small>Best hold</small></div></div>
+          </div>
+          <div class="row g-4">
+            <div class="col-lg-6">
+              <h6 class="fw-bold">Last 7 days (minutes)</h6>
+              <div id="weekBars" class="week-chart mb-4"></div>
+              <h6 class="fw-bold">By pose</h6>
+              <div class="table-responsive mb-4"><table class="table table-sm align-middle"><thead><tr><th>Pose</th><th>Sessions</th><th>Time</th><th>Best hold</th></tr></thead><tbody id="perPose"></tbody></table></div>
+            </div>
+            <div class="col-lg-6">
+              <h6 class="fw-bold">Recent sessions</h6>
+              <ul id="sessionList" class="list-group list-group-flush mb-4"></ul>
+            </div>
+          </div>
+          <hr>
+          <h6 class="fw-bold">Progress photos</h6>
+          <form id="photoForm" class="row g-2 align-items-end mb-3">
+            <div class="col-md-3"><label class="form-label small" for="photoPose">Pose</label><select id="photoPose" class="form-select form-select-sm"></select></div>
+            <div class="col-md-4"><label class="form-label small" for="photoCaption">Caption</label><input id="photoCaption" class="form-control form-control-sm" maxlength="200" placeholder="e.g. Week 2, better balance"></div>
+            <div class="col-md-3"><label class="form-label small" for="photoFile">Photo</label><input id="photoFile" type="file" accept="image/jpeg,image/png,image/webp" class="form-control form-control-sm"></div>
+            <div class="col-md-2"><button id="photoSubmit" class="btn btn-brand btn-sm w-100" type="submit"><i class="fa-solid fa-upload me-1"></i>Upload</button></div>
+          </form>
+          <div id="photoGrid" class="photo-grid"></div>
+          <p class="small text-muted mt-3 mb-0">Photos are private to your account. They are resized in your browser before upload, which also removes location data.</p>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- Profile -->
+    <div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Profile</h5><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
+        <div class="modal-body">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div id="profAvatar"></div>
+            <div><label class="btn btn-sm btn-nav mb-1">Change photo<input id="avatarFile" type="file" accept="image/jpeg,image/png,image/webp" hidden></label><div class="small text-muted" id="profEmail"></div></div>
+          </div>
+          <form id="profileForm">
+            <div class="mb-3"><label class="form-label small fw-bold" for="profName">Name</label><input id="profName" class="form-control" maxlength="60" required></div>
+            <div class="mb-3"><label class="form-label small fw-bold" for="profLevel">Experience</label>
+              <select id="profLevel" class="form-select"><option value="beginner">Beginner</option><option value="intermediate">Intermediate</option><option value="advanced">Advanced</option></select></div>
+            <div class="mb-3"><label class="form-label small fw-bold" for="profGoal">My goal</label><textarea id="profGoal" class="form-control" rows="2" maxlength="200" placeholder="e.g. Improve balance and posture"></textarea></div>
+            <button class="btn btn-brand w-100" type="submit">Save profile</button>
+          </form>
+          <hr>
+          <div class="d-flex justify-content-between align-items-center mb-3"><span class="small">Download everything we store about you</span><a class="btn btn-sm btn-nav" href="/api/me/export" download>Export data</a></div>
+          <details><summary class="small text-danger fw-bold">Delete my account</summary>
+            <p class="small text-muted mt-2">This permanently deletes your profile, sessions and photos.</p>
+            <div class="input-group input-group-sm"><input id="deletePassword" type="password" class="form-control" placeholder="Confirm with your password" autocomplete="current-password"><button id="deleteAccountBtn" class="btn btn-danger" type="button">Delete</button></div>
+          </details>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Main Live Logic Controller Application Script -->
+    <script>
+        let videoElement = document.getElementById('webcam');
+        let canvasElement = document.getElementById('output_canvas');
+        let canvasCtx = canvasElement.getContext('2d');
+        let cameraPrompt = document.getElementById('cameraPrompt');
+        let aiLoadingOverlay = document.getElementById('aiLoadingOverlay');
+        let stopBtn = document.getElementById('stopBtn');
+
+        let activeStream = null;
+        let activePoseModel = null;
+        let activeCamera = null;
+        let timerInterval = null;
+        let secondsElapsed = 0;
+        let lastFrameTime = performance.now();
+        let frameCount = 0;
+
+        // ---------------------------------------------------------------
+        // POSE LIBRARY
+        // Six standing poses: the 5 requested beginner poses, plus the
+        // original Warrior II kept as a bonus (existing feature preserved).
+        // ---------------------------------------------------------------
+        const POSES = {
+            tadasana: {
+                key: 'tadasana',
+                name: 'Tadasana',
+                english: 'Mountain Pose',
+                category: 'Grounding',
+                categoryClass: 'grounding',
+                icon: 'fa-mountain',
+                description: "The foundation of every standing pose — trains even weight, a long spine, and calm focus.",
+                holdTarget: 20,
+                rowLabels: ['Left Leg', 'Right Leg', 'Spine Alignment', 'Shoulder Level', 'Arms at Sides', 'Head Alignment'],
+                instructions: [
+                    "Stand with feet together or hip-width apart, weight spread evenly across both feet.",
+                    "Engage your thighs and lift your kneecaps slightly, without locking your knees.",
+                    "Lengthen your spine and reach the crown of your head toward the ceiling.",
+                    "Relax your shoulders down, away from your ears.",
+                    "Let your arms rest naturally by your sides, palms facing forward."
+                ]
+            },
+            vrikshasana: {
+                key: 'vrikshasana',
+                name: 'Vrikshasana',
+                english: 'Tree Pose',
+                category: 'Balance',
+                categoryClass: 'balance',
+                icon: 'fa-tree',
+                description: "Tests balance, leg strength, and hip alignment by standing tall on one leg.",
+                holdTarget: 20,
+                rowLabels: ['Standing Leg', 'Folded Leg', 'Foot Placement', 'Spine Alignment', 'Shoulder Level', 'Head Alignment'],
+                instructions: [
+                    "Start standing tall in Tadasana, then shift your weight onto one leg.",
+                    "Bend your other knee and place the sole of that foot on your inner calf or inner thigh — never on the knee.",
+                    "Press your foot and standing leg together to find balance.",
+                    "Keep your hips level and facing forward.",
+                    "Bring your hands to your heart, or raise them overhead once you feel steady."
+                ]
+            },
+            trikonasana: {
+                key: 'trikonasana',
+                name: 'Trikonasana',
+                english: 'Triangle Pose',
+                category: 'Stretch',
+                categoryClass: 'stretch',
+                icon: 'fa-arrows-left-right',
+                description: "A wide standing stretch that opens the hips, hamstrings, and side body.",
+                holdTarget: 15,
+                rowLabels: ['Stance Width', 'Leg Extension', 'Side Stretch', 'Arm Extension', 'Arm Direction', 'Head Alignment'],
+                instructions: [
+                    "Step your feet wide apart, about one leg's length.",
+                    "Turn your front foot to point forward, and angle your back foot slightly inward.",
+                    "Extend both arms out to shoulder height.",
+                    "Hinge at your front hip and reach your front hand toward your shin, ankle, or the floor.",
+                    "Stretch your other arm straight up, stacking your shoulders and keeping your chest open."
+                ]
+            },
+            warrior1: {
+                key: 'warrior1',
+                name: 'Virabhadrasana I',
+                english: 'Warrior I',
+                category: 'Strength',
+                categoryClass: 'strength',
+                icon: 'fa-shield-halved',
+                description: "A grounded lunge with arms overhead — builds leg strength and an open chest.",
+                holdTarget: 15,
+                rowLabels: ['Front Leg', 'Back Leg', 'Torso Square', 'Arms Overhead', 'Arms Straight', 'Head Alignment'],
+                instructions: [
+                    "Step one foot back into a wide, deep lunge.",
+                    "Bend your front knee to about a right angle, keeping it stacked above your ankle.",
+                    "Straighten your back leg and press your back heel toward the floor.",
+                    "Square your hips and chest toward the front of your mat.",
+                    "Raise both arms straight overhead, reaching up alongside your ears."
+                ]
+            },
+            utkatasana: {
+                key: 'utkatasana',
+                name: 'Utkatasana',
+                english: 'Chair Pose',
+                category: 'Strength',
+                categoryClass: 'strength',
+                icon: 'fa-chair',
+                description: "An imaginary chair sit that builds heat and strength through the legs and core.",
+                holdTarget: 15,
+                rowLabels: ['Knee Bend', 'Even Weight', 'Torso Lean', 'Arms Overhead', 'Arms Straight', 'Head Alignment'],
+                instructions: [
+                    "Stand with your feet together or hip-width apart.",
+                    "Bend your knees and sit your hips back, as if lowering into an invisible chair.",
+                    "Keep your knees behind your toes and your weight in your heels.",
+                    "Lengthen your spine forward slightly, without rounding your back.",
+                    "Raise both arms overhead, reaching up alongside your ears."
+                ]
+            },
+            warrior2: {
+                key: 'warrior2',
+                name: 'Virabhadrasana II',
+                english: 'Warrior II',
+                category: 'Strength',
+                categoryClass: 'strength',
+                icon: 'fa-fist-raised',
+                description: "A wide, powerful stance with arms extended — builds stamina and hip opening.",
+                holdTarget: 15,
+                rowLabels: ['Front Leg', 'Back Leg', 'Hips Level', 'Arms Extended', 'Arm Symmetry', 'Head Alignment'],
+                instructions: [
+                    "Step your feet wide apart into a strong stance.",
+                    "Turn your front foot forward and bend that knee to about a right angle.",
+                    "Keep your back leg straight and strong.",
+                    "Extend both arms out to shoulder height, front arm reaching over your front leg.",
+                    "Turn your head to gaze out over your front hand."
+                ]
+            }
+        };
+        const POSE_ORDER = ['tadasana', 'vrikshasana', 'trikonasana', 'warrior1', 'utkatasana', 'warrior2'];
+
+        let selectedPoseKey = 'tadasana';
+        let lastValues = [];
+
+        // ---------------------------------------------------------------
+        // Hold-streak tracking state
+        // ---------------------------------------------------------------
+        let holdTimerInterval = null;
+        let holdSeconds = 0;
+        let bestHoldSeconds = 0;
+        let completedHolds = 0;
+        let isPostureCorrect = false;
+        let lastMilestoneAnnounced = 0;
+
+        // ---------------------------------------------------------------
+        // Overall correct/incorrect debounce. A raw per-frame result must
+        // agree for OVERALL_CONFIRM_FRAMES consecutive frames before it is
+        // allowed to flip the confirmed state, so the headline status
+        // doesn't rapidly alternate on borderline frames.
+        // ---------------------------------------------------------------
+        let overallPendingValue = null;
+        let overallPendingCount = 0;
+        const OVERALL_CONFIRM_FRAMES = 6;
+        function updateOverallConfirmed(rawCorrect) {
+            if (rawCorrect === overallPendingValue) {
+                overallPendingCount++;
+            } else {
+                overallPendingValue = rawCorrect;
+                overallPendingCount = 1;
+            }
+            if (overallPendingCount >= OVERALL_CONFIRM_FRAMES) {
+                isPostureCorrect = rawCorrect;
+            }
+        }
+
+        // Voice coaching state
+        let voiceEnabled = true;
+        let lastSpokenMessage = '';
+        let lastSpeakTimestamp = 0;
+
+        function speak(text, { force = false, minIntervalMs = 5000 } = {}) {
+            if (!voiceEnabled || !('speechSynthesis' in window)) return;
+            const now = performance.now();
+            if (!force && (text === lastSpokenMessage || now - lastSpeakTimestamp < minIntervalMs)) return;
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.rate = 1.02;
+            window.speechSynthesis.speak(utterance);
+            lastSpokenMessage = text;
+            lastSpeakTimestamp = now;
+        }
+
+        function toggleVoice() {
+            voiceEnabled = !voiceEnabled;
+            const btn = document.getElementById('voiceToggleBtn');
+            btn.innerHTML = voiceEnabled
+                ? '<i class="fa-solid fa-volume-high"></i>'
+                : '<i class="fa-solid fa-volume-xmark"></i>';
+            btn.classList.toggle('btn-outline-brand', voiceEnabled);
+            btn.classList.toggle('btn-warning', !voiceEnabled);
+            if (!voiceEnabled) {
+                window.speechSynthesis.cancel();
+            } else {
+                speak("Voice coaching enabled.", { force: true, minIntervalMs: 0 });
+            }
+        }
+
+        function startHoldTracking() {
+            holdSeconds = 0;
+            bestHoldSeconds = 0;
+            completedHolds = 0;
+            lastMilestoneAnnounced = 0;
+            isPostureCorrect = false;
+            document.getElementById('holdTimer').innerText = '0s';
+            document.getElementById('bestHoldDisplay').innerText = '0s';
+            document.getElementById('completedHoldsCount').innerText = '0';
+
+            clearInterval(holdTimerInterval);
+            holdTimerInterval = setInterval(() => {
+                if (isPostureCorrect) {
+                    holdSeconds++;
+                    document.getElementById('holdTimer').innerText = `${holdSeconds}s`;
+                    if (holdSeconds > bestHoldSeconds) {
+                        bestHoldSeconds = holdSeconds;
+                        document.getElementById('bestHoldDisplay').innerText = `${bestHoldSeconds}s`;
+                    }
+                    if (holdSeconds > 0 && holdSeconds % 5 === 0 && holdSeconds !== lastMilestoneAnnounced) {
+                        lastMilestoneAnnounced = holdSeconds;
+                        speak(`${holdSeconds} seconds. Keep holding.`, { force: true, minIntervalMs: 0 });
+                    }
+                } else {
+                    if (holdSeconds >= 3) {
+                        completedHolds++;
+                        document.getElementById('completedHoldsCount').innerText = completedHolds;
+                    }
+                    holdSeconds = 0;
+                    lastMilestoneAnnounced = 0;
+                    document.getElementById('holdTimer').innerText = '0s';
+                }
+            }, 1000);
+        }
+
+        // ---------------------------------------------------------------
+        // Geometry helpers
+        // ---------------------------------------------------------------
+        function calculateAngle(p1, p2, p3) {
+            let radians = Math.atan2(p3.y - p2.y, p3.x - p2.x) - Math.atan2(p1.y - p2.y, p1.x - p2.x);
+            let angle = Math.abs((radians * 180.0) / Math.PI);
+            if (angle > 180.0) angle = 360.0 - angle;
+            return Math.round(angle);
+        }
+        function dist(a, b) { return Math.hypot(a.x - b.x, a.y - b.y); }
+        function verticalAngle(top, bottom) {
+            // Degrees off vertical between two points. 0 = perfectly upright.
+            const dx = Math.abs(top.x - bottom.x);
+            const dy = Math.abs(top.y - bottom.y);
+            return Math.round(Math.atan2(dx, dy) * 180.0 / Math.PI);
+        }
+
+        // ---------------------------------------------------------------
+        // Landmark smoothing (reduces jitter frame to frame)
+        // Low-confidence points hold their last stable position instead
+        // of snapping, so a brief misdetection doesn't jump the skeleton.
+        // ---------------------------------------------------------------
+        let smoothedLandmarks = null;
+        const SMOOTH_ALPHA = 0.35;
+        const VISIBILITY_MIN = 0.4;
+
+        function updateSmoothedLandmarks(raw) {
+            if (!smoothedLandmarks) {
+                smoothedLandmarks = raw.map(p => ({ x: p.x, y: p.y, z: p.z || 0, visibility: p.visibility }));
+                return smoothedLandmarks;
+            }
+            for (let i = 0; i < raw.length; i++) {
+                const r = raw[i];
+                const s = smoothedLandmarks[i];
+                if (r.visibility !== undefined && r.visibility < VISIBILITY_MIN) continue;
+                s.x += (r.x - s.x) * SMOOTH_ALPHA;
+                s.y += (r.y - s.y) * SMOOTH_ALPHA;
+                s.z = r.z || 0;
+                s.visibility = r.visibility;
+            }
+            return smoothedLandmarks;
+        }
+
+        // ---------------------------------------------------------------
+        // Classification helpers with hysteresis: once a checkpoint is
+        // "good" it takes a bigger deviation to fall out of "good", so a
+        // stable pose doesn't flicker between states near a boundary.
+        // ---------------------------------------------------------------
+        let stateMemory = {};
+
+        function classifyHB(id, value, good, warn, margin = 4) { // higher is better
+            const prev = stateMemory[id];
+            const gT = good - (prev === 'good' ? margin : 0);
+            if (value >= gT) { stateMemory[id] = 'good'; return 'good'; }
+            const wT = warn - (prev === 'warn' ? margin : 0);
+            if (value >= wT) { stateMemory[id] = 'warn'; return 'warn'; }
+            stateMemory[id] = 'bad'; return 'bad';
+        }
+        function classifyLB(id, value, good, warn, margin = 4) { // lower is better
+            const prev = stateMemory[id];
+            const gT = good + (prev === 'good' ? margin : 0);
+            if (value <= gT) { stateMemory[id] = 'good'; return 'good'; }
+            const wT = warn + (prev === 'warn' ? margin : 0);
+            if (value <= wT) { stateMemory[id] = 'warn'; return 'warn'; }
+            stateMemory[id] = 'bad'; return 'bad';
+        }
+        function classifyRange(id, value, goodLo, goodHi, warnLo, warnHi, margin = 4) {
+            const prev = stateMemory[id];
+            let gl = goodLo, gh = goodHi;
+            if (prev === 'good') { gl -= margin; gh += margin; }
+            if (value >= gl && value <= gh) { stateMemory[id] = 'good'; return 'good'; }
+            let wl = warnLo, wh = warnHi;
+            if (prev === 'warn') { wl -= margin; wh += margin; }
+            if (value >= wl && value <= wh) { stateMemory[id] = 'warn'; return 'warn'; }
+            stateMemory[id] = 'bad'; return 'bad';
+        }
+
+        const STATE_META = {
+            good: { icon: '🟢', text: 'Correct', badge: 'badge-good' },
+            warn: { icon: '🟡', text: 'Adjust', badge: 'badge-warn' },
+            bad:  { icon: '🔴', text: 'Incorrect', badge: 'badge-bad' }
+        };
+        function mkRow(label, valueText, state) { return { label, valueText, state }; }
+        function mkAlert(state, text) { return { state, text }; }
+
+        // ---------------------------------------------------------------
+        // Per-pose evaluators. Each receives the current frame's computed
+        // angles/metrics (`a`) and returns { rows, alerts }.
+        // ---------------------------------------------------------------
+        // Shared "Head Alignment" checkpoint used by every pose — flags a
+        // head tilted or shifted sideways off the shoulder midline.
+        function headAlignmentCheck(a, id) {
+            const s = classifyLB(id, a.headLateral, 6, 12, 3);
+            const row = mkRow('Head Alignment', Math.round(a.headLateral) + '', s);
+            const alert = s !== 'good' ? mkAlert(s, "Keep your head centered and level over your shoulders.") : null;
+            return { row, alert };
+        }
+
+        const EVALUATORS = {
+
+            tadasana(a) {
+                const rows = [], alerts = [];
+                const sL = classifyHB('tadasana_lk', a.leftKnee, 165, 150);
+                rows.push(mkRow('Left Leg', a.leftKnee + '°', sL));
+                if (sL !== 'good') alerts.push(mkAlert(sL, "Straighten your left leg and engage the thigh."));
+
+                const sR = classifyHB('tadasana_rk', a.rightKnee, 165, 150);
+                rows.push(mkRow('Right Leg', a.rightKnee + '°', sR));
+                if (sR !== 'good') alerts.push(mkAlert(sR, "Straighten your right leg and engage the thigh."));
+
+                const sT = classifyLB('tadasana_torso', a.torsoTilt, 8, 16);
+                rows.push(mkRow('Spine Alignment', a.torsoTilt + '°', sT));
+                if (sT !== 'good') alerts.push(mkAlert(sT, "Lengthen your spine and stack your shoulders directly over your hips."));
+
+                const sS = classifyLB('tadasana_sh', a.shoulderDelta, 3, 6);
+                rows.push(mkRow('Shoulder Level', Math.round(a.shoulderDelta) + '', sS));
+                if (sS !== 'good') alerts.push(mkAlert(sS, "Level your shoulders — avoid tilting to one side."));
+
+                // Arms alongside the body is a REQUIRED condition for Tadasana.
+                // Use the more-lifted arm (smallest abduction angle) so a single
+                // raised or outstretched arm is caught even if the other is down.
+                const worstArm = Math.min(a.leftArmAbduction, a.rightArmAbduction);
+                const sArm = classifyHB('tadasana_arm', worstArm, 155, 120, 8);
+                rows.push(mkRow('Arms at Sides', worstArm + '°', sArm));
+                if (sArm !== 'good') {
+                    const which = a.leftArmAbduction < a.rightArmAbduction ? 'left' : 'right';
+                    if (sArm === 'bad') {
+                        alerts.push(mkAlert(sArm, worstArm < 60
+                            ? `Lower your ${which} arm — arms should rest alongside your body, not raised overhead.`
+                            : `Lower your ${which} arm — it is extended out to the side; bring it down alongside your body.`));
+                    } else {
+                        alerts.push(mkAlert(sArm, `Relax your ${which} arm further down alongside your body.`));
+                    }
+                }
+
+                const { row: headRow, alert: headAlert } = headAlignmentCheck(a, 'tadasana_head');
+                rows.push(headRow);
+                if (headAlert) alerts.push(headAlert);
+
+                return { rows, alerts };
+            },
+
+            vrikshasana(a) {
+                const rows = [], alerts = [];
+                const leftBentCand = a.leftKnee < 145;
+                const rightBentCand = a.rightKnee < 145;
+                let legOk = false, standAngle, bentAngle, standLabel, bentLabel, bentIsLeft;
+
+                if (leftBentCand && !rightBentCand) {
+                    legOk = true; standAngle = a.rightKnee; bentAngle = a.leftKnee; bentIsLeft = true;
+                    standLabel = 'Right Leg (standing)'; bentLabel = 'Left Leg (folded)';
+                } else if (rightBentCand && !leftBentCand) {
+                    legOk = true; standAngle = a.leftKnee; bentAngle = a.rightKnee; bentIsLeft = false;
+                    standLabel = 'Left Leg (standing)'; bentLabel = 'Right Leg (folded)';
+                }
+
+                if (legOk) {
+                    const sStand = classifyHB('tree_stand', standAngle, 160, 145);
+                    rows.push(mkRow(standLabel, standAngle + '°', sStand));
+                    if (sStand !== 'good') alerts.push(mkAlert(sStand, "Press firmly through your standing leg and keep it fully straight."));
+
+                    const sBent = classifyRange('tree_bent', bentAngle, 20, 75, 10, 100);
+                    rows.push(mkRow(bentLabel, bentAngle + '°', sBent));
+                    if (sBent !== 'good') alerts.push(mkAlert(sBent, "Lift your folded foot higher onto your inner thigh or calf — never on the knee."));
+
+                    // Critical condition: the folded foot must not be resting
+                    // directly on the standing knee. Compare the folded ankle's
+                    // height to the standing knee's height, normalized by torso
+                    // length so it works across body proportions and camera distance.
+                    const foldedAnkleY = bentIsLeft ? a.leftAnkleY : a.rightAnkleY;
+                    const standKneeY = bentIsLeft ? a.rightKneeY : a.leftKneeY;
+                    const gap = Math.abs(foldedAnkleY - standKneeY) / (a.torsoLength || 0.001);
+                    const sFoot = classifyHB('tree_foot', gap, 0.28, 0.16, 0.05);
+                    rows.push(mkRow('Foot Placement', gap.toFixed(2), sFoot));
+                    if (sFoot !== 'good') alerts.push(mkAlert(sFoot, "Move your foot off the knee joint — press it into the calf or inner thigh instead."));
+                } else {
+                    const bothBent = a.leftKnee < 145 && a.rightKnee < 145;
+                    stateMemory['tree_stand'] = 'bad'; stateMemory['tree_bent'] = 'bad'; stateMemory['tree_foot'] = 'bad';
+                    rows.push(mkRow('Standing Leg', '--', 'bad'));
+                    rows.push(mkRow('Folded Leg', '--', 'bad'));
+                    rows.push(mkRow('Foot Placement', '--', 'bad'));
+                    alerts.push(mkAlert('bad', bothBent
+                        ? "Keep one leg straight and grounded — both knees are currently bent."
+                        : "Shift your weight onto one leg and fold the other knee outward."));
+                }
+
+                const sT = classifyLB('tree_torso', a.torsoTilt, 10, 18);
+                rows.push(mkRow('Spine Alignment', a.torsoTilt + '°', sT));
+                if (sT !== 'good') alerts.push(mkAlert(sT, "Draw your navel in and stack your spine tall over your hips."));
+
+                const sS = classifyLB('tree_sh', a.shoulderDelta, 3, 6);
+                rows.push(mkRow('Shoulder Level', Math.round(a.shoulderDelta) + '', sS));
+                if (sS !== 'good') alerts.push(mkAlert(sS, "Keep both shoulders level and relaxed."));
+
+                const { row: headRow, alert: headAlert } = headAlignmentCheck(a, 'tree_head');
+                rows.push(headRow);
+                if (headAlert) alerts.push(headAlert);
+
+                return { rows, alerts };
+            },
+
+            trikonasana(a) {
+                const rows = [], alerts = [];
+                const sStance = classifyHB('tri_stance', a.ankleSpreadRatio, 1.3, 1.05, 0.08);
+                rows.push(mkRow('Stance Width', a.ankleSpreadRatio.toFixed(2) + 'x', sStance));
+                if (sStance !== 'good') alerts.push(mkAlert(sStance, "Step your feet wider apart — roughly one leg's length between your ankles."));
+
+                const minKnee = Math.min(a.leftKnee, a.rightKnee);
+                const sKnee = classifyHB('tri_knee', minKnee, 155, 135, 6);
+                rows.push(mkRow('Leg Extension', minKnee + '°', sKnee));
+                if (sKnee !== 'good') alerts.push(mkAlert(sKnee, "Straighten your front leg fully, keeping just a soft micro-bend in the knee."));
+
+                const sTorso = classifyRange('tri_torso', a.torsoTilt, 20, 65, 10, 80, 5);
+                rows.push(mkRow('Side Stretch', a.torsoTilt + '°', sTorso));
+                if (sTorso !== 'good') alerts.push(mkAlert(sTorso, "Hinge from your hip and reach your torso toward your front leg."));
+
+                const minElbow = Math.min(a.leftElbow, a.rightElbow);
+                const sArm = classifyHB('tri_arm', minElbow, 150, 125, 6);
+                rows.push(mkRow('Arm Extension', minElbow + '°', sArm));
+                if (sArm !== 'good') alerts.push(mkAlert(sArm, "Straighten both arms fully — one reaching down, one reaching up."));
+
+                // The final shape is asymmetric: one wrist reaches well below
+                // shoulder height (toward the shin/floor) while the other
+                // reaches well above it (toward the ceiling). Two arms simply
+                // held out at shoulder height (a static T) is not yet correct.
+                const wristSpread = Math.max(a.leftWristRise, a.rightWristRise) - Math.min(a.leftWristRise, a.rightWristRise);
+                const sDir = classifyHB('tri_dir', wristSpread, 22, 12, 5);
+                rows.push(mkRow('Arm Direction', Math.round(wristSpread) + '', sDir));
+                if (sDir !== 'good') alerts.push(mkAlert(sDir, "Reach one arm up toward the ceiling and the other down toward your shin — don't just hold them level."));
+
+                const { row: headRow, alert: headAlert } = headAlignmentCheck(a, 'tri_head');
+                rows.push(headRow);
+                if (headAlert) alerts.push(headAlert);
+
+                return { rows, alerts };
+            },
+
+            warrior1(a) {
+                const rows = [], alerts = [];
+                const leftBentCand = a.leftKnee >= 70 && a.leftKnee <= 140;
+                const rightBentCand = a.rightKnee >= 70 && a.rightKnee <= 140;
+                let legOk = false, frontAngle, backAngle, frontLabel, backLabel;
+
+                if (leftBentCand && a.rightKnee > 150) {
+                    legOk = true; frontAngle = a.leftKnee; backAngle = a.rightKnee;
+                    frontLabel = 'Front Leg (left)'; backLabel = 'Back Leg (right)';
+                } else if (rightBentCand && a.leftKnee > 150) {
+                    legOk = true; frontAngle = a.rightKnee; backAngle = a.leftKnee;
+                    frontLabel = 'Front Leg (right)'; backLabel = 'Back Leg (left)';
+                }
+
+                if (legOk) {
+                    const sFront = classifyRange('w1_front', frontAngle, 85, 120, 70, 140, 6);
+                    rows.push(mkRow(frontLabel, frontAngle + '°', sFront));
+                    if (sFront !== 'good') alerts.push(mkAlert(sFront, "Bend your front knee closer to a right angle, keeping it above your ankle."));
+
+                    const sBack = classifyHB('w1_back', backAngle, 160, 145, 6);
+                    rows.push(mkRow(backLabel, backAngle + '°', sBack));
+                    if (sBack !== 'good') alerts.push(mkAlert(sBack, "Straighten your back leg and press your heel toward the floor."));
+                } else {
+                    stateMemory['w1_front'] = 'bad'; stateMemory['w1_back'] = 'bad';
+                    rows.push(mkRow('Front Leg', '--', 'bad'));
+                    rows.push(mkRow('Back Leg', '--', 'bad'));
+                    alerts.push(mkAlert('bad', "Step one foot back into a deep lunge — front knee bent, back leg straight."));
+                }
+
+                const sTorso = classifyLB('w1_torso', a.torsoTilt, 14, 24, 5);
+                rows.push(mkRow('Torso Square', a.torsoTilt + '°', sTorso));
+                if (sTorso !== 'good') alerts.push(mkAlert(sTorso, "Square your hips and chest to the front, spine tall."));
+
+                const armRise = Math.min(a.leftWristRise, a.rightWristRise);
+                const sArm = classifyHB('w1_arm', armRise, 6, 0, 3);
+                rows.push(mkRow('Arms Overhead', Math.round(armRise) + '', sArm));
+                if (sArm !== 'good') alerts.push(mkAlert(sArm, "Reach both arms straight overhead, palms facing each other."));
+
+                // Both arms must be straight (not bent at the elbow) and
+                // matched in height once overhead.
+                const minElbow = Math.min(a.leftElbow, a.rightElbow);
+                const sStraight = classifyHB('w1_straight', minElbow, 155, 130, 6);
+                rows.push(mkRow('Arms Straight', minElbow + '°', sStraight));
+                if (sStraight !== 'good') {
+                    const which = a.leftElbow < a.rightElbow ? 'left' : 'right';
+                    alerts.push(mkAlert(sStraight, `Straighten your ${which} elbow fully.`));
+                }
+
+                const { row: headRow, alert: headAlert } = headAlignmentCheck(a, 'w1_head');
+                rows.push(headRow);
+                if (headAlert) alerts.push(headAlert);
+
+                return { rows, alerts };
+            },
+
+            utkatasana(a) {
+                const rows = [], alerts = [];
+                const avgKnee = (a.leftKnee + a.rightKnee) / 2;
+                const sKnee = classifyRange('utk_knee', avgKnee, 95, 140, 85, 155, 6);
+                rows.push(mkRow('Knee Bend', Math.round(avgKnee) + '°', sKnee));
+                if (sKnee !== 'good') alerts.push(mkAlert(sKnee, "Sit your hips back and down, as if lowering onto a chair."));
+
+                const sSym = classifyLB('utk_sym', a.kneeDelta, 12, 25, 4);
+                rows.push(mkRow('Even Weight', Math.round(a.kneeDelta) + '', sSym));
+                if (sSym !== 'good') alerts.push(mkAlert(sSym, "Distribute your weight evenly between both legs."));
+
+                const sTorso = classifyRange('utk_torso', a.torsoTilt, 15, 45, 8, 58, 5);
+                rows.push(mkRow('Torso Lean', a.torsoTilt + '°', sTorso));
+                if (sTorso !== 'good') alerts.push(mkAlert(sTorso, "Hinge slightly forward from your hips, keeping your spine long — don't collapse your chest."));
+
+                const armRise = Math.min(a.leftWristRise, a.rightWristRise);
+                const sArm = classifyHB('utk_arm', armRise, 6, 0, 3);
+                rows.push(mkRow('Arms Overhead', Math.round(armRise) + '', sArm));
+                if (sArm !== 'good') alerts.push(mkAlert(sArm, "Raise both arms overhead, reaching up alongside your ears."));
+
+                const minElbow = Math.min(a.leftElbow, a.rightElbow);
+                const sStraight = classifyHB('utk_straight', minElbow, 155, 130, 6);
+                rows.push(mkRow('Arms Straight', minElbow + '°', sStraight));
+                if (sStraight !== 'good') {
+                    const which = a.leftElbow < a.rightElbow ? 'left' : 'right';
+                    alerts.push(mkAlert(sStraight, `Straighten your ${which} elbow fully.`));
+                }
+
+                const { row: headRow, alert: headAlert } = headAlignmentCheck(a, 'utk_head');
+                rows.push(headRow);
+                if (headAlert) alerts.push(headAlert);
+
+                return { rows, alerts };
+            },
+
+            warrior2(a) {
+                const rows = [], alerts = [];
+                const leftBentCand = a.leftKnee >= 80 && a.leftKnee <= 140;
+                const rightBentCand = a.rightKnee >= 80 && a.rightKnee <= 140;
+                let legOk = false, frontAngle, backAngle, frontLabel, backLabel;
+
+                if (leftBentCand && a.rightKnee > 145) {
+                    legOk = true; frontAngle = a.leftKnee; backAngle = a.rightKnee;
+                    frontLabel = 'Front Leg (left)'; backLabel = 'Back Leg (right)';
+                } else if (rightBentCand && a.leftKnee > 145) {
+                    legOk = true; frontAngle = a.rightKnee; backAngle = a.leftKnee;
+                    frontLabel = 'Front Leg (right)'; backLabel = 'Back Leg (left)';
+                }
+
+                if (legOk) {
+                    const sFront = classifyRange('w2_front', frontAngle, 85, 125, 75, 140, 6);
+                    rows.push(mkRow(frontLabel, frontAngle + '°', sFront));
+                    if (sFront !== 'good') alerts.push(mkAlert(sFront, "Sink deeper into your front knee until your thigh nears parallel with the floor."));
+
+                    const sBack = classifyHB('w2_back', backAngle, 155, 140, 6);
+                    rows.push(mkRow(backLabel, backAngle + '°', sBack));
+                    if (sBack !== 'good') alerts.push(mkAlert(sBack, "Straighten your back leg fully."));
+                } else {
+                    stateMemory['w2_front'] = 'bad'; stateMemory['w2_back'] = 'bad';
+                    rows.push(mkRow('Front Leg', '--', 'bad'));
+                    rows.push(mkRow('Back Leg', '--', 'bad'));
+                    alerts.push(mkAlert('bad', "Widen your stance into a lunge — one knee bent, one leg straight."));
+                }
+
+                const sHip = classifyLB('w2_hip', a.hipDelta, 4, 8);
+                rows.push(mkRow('Hips Level', Math.round(a.hipDelta) + '', sHip));
+                if (sHip !== 'good') alerts.push(mkAlert(sHip, "Level your hips — avoid dropping to one side."));
+
+                const minElbow = Math.min(a.leftElbow, a.rightElbow);
+                const sArm = classifyHB('w2_arm', minElbow, 150, 125, 6);
+                rows.push(mkRow('Arms Extended', minElbow + '°', sArm));
+                if (sArm !== 'good') alerts.push(mkAlert(sArm, "Extend both arms out to shoulder height, reaching actively through the fingertips."));
+
+                // Both arms need to be out at true shoulder-height abduction
+                // (~90°) and matched — one arm drooping or drifting forward
+                // should not be masked by the other arm being correct.
+                const worstAbduction = Math.min(a.leftArmAbduction, a.rightArmAbduction);
+                const sSym = classifyRange('w2_sym', worstAbduction, 75, 105, 60, 120, 5);
+                rows.push(mkRow('Arm Symmetry', worstAbduction + '°', sSym));
+                if (sSym !== 'good') {
+                    const which = a.leftArmAbduction < a.rightArmAbduction ? 'left' : 'right';
+                    alerts.push(mkAlert(sSym, `Raise your ${which} arm to match shoulder height on the other side.`));
+                }
+
+                const { row: headRow, alert: headAlert } = headAlignmentCheck(a, 'w2_head');
+                rows.push(headRow);
+                if (headAlert) alerts.push(headAlert);
+
+                return { rows, alerts };
+            }
+        };
+
+        // ---------------------------------------------------------------
+        // Rendering: pose list, instructions panel, metrics table
+        // ---------------------------------------------------------------
+        function renderPoseList() {
+            const container = document.getElementById('poseList');
+            container.innerHTML = '';
+            POSE_ORDER.forEach((key) => {
+                const p = POSES[key];
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'pose-card' + (key === selectedPoseKey ? ' active' : '');
+                btn.setAttribute('data-key', key);
+                btn.onclick = () => selectPose(key, btn);
+                btn.innerHTML = `
+                    <div class="d-flex w-100 justify-content-between align-items-start gap-2">
+                        <div>
+                            <h6><i class="fa-solid ${p.icon} pose-card-icon me-2"></i>${p.name}</h6>
+                            <small class="text-muted d-block">${p.english}</small>
+                        </div>
+                        <span class="cat-badge cat-${p.categoryClass}">${p.category}</span>
+                    </div>
+                    <small class="text-muted d-block mt-2">${p.description}</small>
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        function renderInstructions(key) {
+            const p = POSES[key];
+            document.getElementById('poseInstructionsTitle').innerText = `How to Practice ${p.english}`;
+            document.getElementById('poseDescription').innerText = p.description;
+            document.getElementById('poseHoldTarget').innerHTML = `<i class="fa-regular fa-clock"></i> Aim to hold for about ${p.holdTarget} seconds`;
+            document.getElementById('poseInstructionsList').innerHTML = p.instructions.map(step => `<li>${step}</li>`).join('');
+        }
+
+        function renderMetricsTable(key) {
+            const p = POSES[key];
+            const tbody = document.getElementById('metricsTableBody');
+            tbody.innerHTML = p.rowLabels.map((label, i) => `
+                <tr>
+                    <td>${label}</td>
+                    <td><span id="metric-value-${i}">--</span></td>
+                    <td><span id="metric-status-${i}" class="badge badge-waiting">Waiting…</span></td>
+                </tr>
+            `).join('');
+            lastValues = new Array(p.rowLabels.length).fill(null);
+        }
+
+        function selectPose(key, element) {
+            selectedPoseKey = key;
+            const p = POSES[key];
+            document.getElementById('targetPoseLabel').innerText = `${p.name} (${p.english})`;
+
+            document.querySelectorAll('.pose-card').forEach(card => card.classList.remove('active'));
+            if (element) element.classList.add('active');
+
+            stateMemory = {};
+            overallPendingValue = null;
+            overallPendingCount = 0;
+            renderInstructions(key);
+            renderMetricsTable(key);
+            resetTableStateToWaiting();
+
+            isPostureCorrect = false;
+            holdSeconds = 0;
+            lastMilestoneAnnounced = 0;
+            document.getElementById('holdTimer').innerText = '0s';
+            speak(`Switching to ${p.english}.`, { force: true, minIntervalMs: 0 });
+        }
+
+        function startTimer() {
+            secondsElapsed = 0;
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                secondsElapsed++;
+                let mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+                let secs = String(secondsElapsed % 60).padStart(2, '0');
+                document.getElementById('timer').innerText = `${mins}:${secs}`;
+            }, 1000);
+        }
+
+        function updateGuidanceBanner(alerts, confirmedGood) {
+            const banner = document.getElementById('guidanceBanner');
+            const textEl = document.getElementById('aiGuidanceText');
+            banner.classList.remove('state-good', 'state-warn', 'state-bad');
+
+            if (confirmedGood) {
+                banner.classList.add('state-good');
+                textEl.innerHTML = "<strong>🟢 Excellent — Pose Confirmed!</strong> Hold steady and keep your breath even.";
+                speak("Nice, that's it. Hold that position.", { minIntervalMs: 6000 });
+                return;
+            }
+
+            if (alerts.length === 0) {
+                // The per-frame check just cleared but the confirmation window
+                // hasn't elapsed yet — avoid flashing "Correct" prematurely.
+                banner.classList.add('state-warn');
+                textEl.innerHTML = "<strong>🟡 Almost There:</strong> Hold the position steady to confirm.";
+                return;
+            }
+
+            const hasBad = alerts.some(al => al.state === 'bad');
+            const shown = alerts.slice(0, 3);
+            if (hasBad) {
+                banner.classList.add('state-bad');
+                textEl.innerHTML = `<strong>🔴 Needs Correction:</strong><ul>${shown.map(a => `<li>${a.text}</li>`).join('')}</ul>`;
+                speak(alerts.find(a => a.state === 'bad').text, { minIntervalMs: 4500 });
+            } else {
+                banner.classList.add('state-warn');
+                textEl.innerHTML = `<strong>🟡 Almost There:</strong><ul>${shown.map(a => `<li>${a.text}</li>`).join('')}</ul>`;
+                speak(alerts[0].text, { minIntervalMs: 6000 });
+            }
+        }
+
+        // ---------------------------------------------------------------
+        // MediaPipe Pose Inference Results Processing Callback
+        // ---------------------------------------------------------------
+        function onResults(results) {
+            if (!aiLoadingOverlay.classList.contains('d-none')) {
+                aiLoadingOverlay.classList.add('d-none');
+            }
+
+            frameCount++;
+            let now = performance.now();
+            if (now - lastFrameTime >= 1000) {
+                document.getElementById('fpsCounter').innerText = `FPS: ${Math.round((frameCount * 1000) / (now - lastFrameTime))}`;
+                frameCount = 0;
+                lastFrameTime = now;
+            }
+
+            if (canvasElement.width !== videoElement.videoWidth) {
+                canvasElement.width = videoElement.videoWidth;
+                canvasElement.height = videoElement.videoHeight;
+            }
+
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+            if (results.poseLandmarks) {
+                const lm = updateSmoothedLandmarks(results.poseLandmarks);
+
+                drawConnectors(canvasCtx, lm, POSE_CONNECTIONS, { color: '#FFC94A', lineWidth: 4 });
+                drawLandmarks(canvasCtx, lm, { color: '#FF4D8D', fillColor: '#FFFFFF', lineWidth: 1.5, radius: 4 });
+
+                const nose = lm[0];
+                const leftShoulder = lm[11], rightShoulder = lm[12];
+                const leftElbow = lm[13], rightElbow = lm[14];
+                const leftWrist = lm[15], rightWrist = lm[16];
+                const leftHip = lm[23], rightHip = lm[24];
+                const leftKnee = lm[25], rightKnee = lm[26];
+                const leftAnkle = lm[27], rightAnkle = lm[28];
+                const leftFootIndex = lm[31], rightFootIndex = lm[32];
+
+                const shoulderMid = { x: (leftShoulder.x + rightShoulder.x) / 2, y: (leftShoulder.y + rightShoulder.y) / 2 };
+                const hipMid = { x: (leftHip.x + rightHip.x) / 2, y: (leftHip.y + rightHip.y) / 2 };
+
+                const a = {
+                    leftKnee: calculateAngle(leftHip, leftKnee, leftAnkle),
+                    rightKnee: calculateAngle(rightHip, rightKnee, rightAnkle),
+                    leftElbow: calculateAngle(leftShoulder, leftElbow, leftWrist),
+                    rightElbow: calculateAngle(rightShoulder, rightElbow, rightWrist),
+                    // Arm "abduction": angle at the shoulder between the hip and the elbow.
+                    // ~170-180 = arm hanging alongside the body, ~80-100 = arm out to the
+                    // side at shoulder height, ~0-30 = arm reaching overhead. This is what
+                    // lets us tell "arms at sides" apart from "arms out" and "arms up".
+                    leftArmAbduction: calculateAngle(leftHip, leftShoulder, leftElbow),
+                    rightArmAbduction: calculateAngle(rightHip, rightShoulder, rightElbow),
+                    torsoTilt: verticalAngle(shoulderMid, hipMid),
+                    shoulderDelta: Math.abs(leftShoulder.y - rightShoulder.y) * 100,
+                    hipDelta: Math.abs(leftHip.y - rightHip.y) * 100,
+                    shoulderWidth: dist(leftShoulder, rightShoulder),
+                    torsoLength: dist(shoulderMid, hipMid),
+                    ankleSpread: dist(leftAnkle, rightAnkle),
+                    leftWristRise: (leftShoulder.y - leftWrist.y) * 100,
+                    rightWristRise: (rightShoulder.y - rightWrist.y) * 100,
+                    // Lateral head offset from the shoulder midline, normalized by
+                    // shoulder width, for a head/neck alignment checkpoint.
+                    headLateral: 0,
+                    // Raw points needed for asana-specific relational checks
+                    // (e.g. "is the foot resting on the knee" in Tree Pose).
+                    leftAnkleY: leftAnkle.y, rightAnkleY: rightAnkle.y,
+                    leftKneeY: leftKnee.y, rightKneeY: rightKnee.y,
+                    leftFootX: leftFootIndex.x, rightFootX: rightFootIndex.x
+                };
+                a.ankleSpreadRatio = a.ankleSpread / (a.shoulderWidth || 0.001);
+                a.armAbductionDelta = Math.abs(a.leftArmAbduction - a.rightArmAbduction);
+                a.elbowDelta = Math.abs(a.leftElbow - a.rightElbow);
+                a.kneeDelta = Math.abs(a.leftKnee - a.rightKnee);
+                a.headLateral = Math.abs(nose.x - shoulderMid.x) / (a.shoulderWidth || 0.001) * 100;
+
+                const evalResult = EVALUATORS[selectedPoseKey](a);
+
+                evalResult.rows.forEach((row, i) => {
+                    const valEl = document.getElementById(`metric-value-${i}`);
+                    const statusEl = document.getElementById(`metric-status-${i}`);
+                    if (!valEl || !statusEl) return;
+
+                    const num = parseFloat(row.valueText);
+                    const prevVal = lastValues[i];
+                    // Only touch the displayed number when the change is meaningful,
+                    // so a stable pose doesn't visibly flicker every frame.
+                    if (isNaN(num) || prevVal === null || Math.abs(num - prevVal) >= 2) {
+                        valEl.innerText = row.valueText;
+                        lastValues[i] = isNaN(num) ? prevVal : num;
+                    }
+                    const meta = STATE_META[row.state];
+                    statusEl.innerText = `${meta.icon} ${meta.text}`;
+                    statusEl.className = `badge ${meta.badge}`;
+                });
+
+                updateOverallConfirmed(evalResult.alerts.length === 0);
+                updateGuidanceBanner(evalResult.alerts, isPostureCorrect);
+
+            } else {
+                overallPendingValue = null;
+                overallPendingCount = 0;
+                isPostureCorrect = false;
+                resetTableStateToWaiting();
+            }
+            canvasCtx.restore();
+        }
+
+        function resetTableStateToWaiting() {
+            const count = POSES[selectedPoseKey].rowLabels.length;
+            for (let i = 0; i < count; i++) {
+                const valEl = document.getElementById(`metric-value-${i}`);
+                const statusEl = document.getElementById(`metric-status-${i}`);
+                if (valEl) valEl.innerText = '--';
+                if (statusEl) { statusEl.innerText = 'Waiting…'; statusEl.className = 'badge badge-waiting'; }
+            }
+            const banner = document.getElementById('guidanceBanner');
+            banner.classList.remove('state-good', 'state-warn', 'state-bad');
+            document.getElementById('aiGuidanceText').innerText = "Position yourself fully inside the camera frame so tracking can begin.";
+        }
+
+        // ---------------------------------------------------------------
+        // Camera lifecycle
+        // ---------------------------------------------------------------
+        async function initiateWebcam() {
+            cameraPrompt.classList.add('d-none');
+            aiLoadingOverlay.classList.remove('d-none');
+            smoothedLandmarks = null;
+            stateMemory = {};
+            overallPendingValue = null;
+            overallPendingCount = 0;
+
+            try {
+                activePoseModel = new Pose({
+                    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+                });
+
+                activePoseModel.setOptions({
+                    modelComplexity: 1,
+                    smoothLandmarks: true,
+                    enableSegmentation: false,
+                    smoothSegmentation: false,
+                    minDetectionConfidence: 0.6,
+                    minTrackingConfidence: 0.6
+                });
+
+                activePoseModel.onResults(onResults);
+
+                activeStream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: 640, height: 480, facingMode: "user" },
+                    audio: false
+                });
+
+                videoElement.srcObject = activeStream;
+                stopBtn.classList.remove('d-none');
+                startTimer();
+                startHoldTracking();
+                speak(`Starting ${POSES[selectedPoseKey].english}. Get into position.`, { force: true, minIntervalMs: 0 });
+
+                activeCamera = new Camera(videoElement, {
+                    onFrame: async () => {
+                        await activePoseModel.send({ image: videoElement });
+                    },
+                    width: 640,
+                    height: 480
+                });
+
+                await activeCamera.start();
+
+            } catch (err) {
+                console.error("Camera Initialisation Error:", err);
+                alert("Camera initialization failed. Please check that camera permissions are enabled for this tab.");
+                stopWebcam();
+            }
+        }
+
+        function stopWebcam() {
+            clearInterval(timerInterval);
+            clearInterval(holdTimerInterval);
+            isPostureCorrect = false;
+            document.getElementById('timer').innerText = "00:00";
+            document.getElementById('fpsCounter').innerText = "FPS: 0";
+            document.getElementById('holdTimer').innerText = "0s";
+            if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+
+            if (activeCamera) { try { activeCamera.stop(); } catch (e) {} activeCamera = null; }
+            if (activeStream) { activeStream.getTracks().forEach(track => track.stop()); activeStream = null; }
+            if (videoElement) videoElement.srcObject = null;
+            if (canvasCtx && canvasElement) canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+            smoothedLandmarks = null;
+            resetTableStateToWaiting();
+            stopBtn.classList.add('d-none');
+            aiLoadingOverlay.classList.add('d-none');
+            cameraPrompt.classList.remove('d-none');
+        }
+
+        // ---------------------------------------------------------------
+        // Init
+        // ---------------------------------------------------------------
+        renderPoseList();
+        renderInstructions(selectedPoseKey);
+        renderMetricsTable(selectedPoseKey);
+        document.getElementById('targetPoseLabel').innerText = `${POSES[selectedPoseKey].name} (${POSES[selectedPoseKey].english})`;
+        resetTableStateToWaiting();
+    </script>
+    <script src="js/extras.js"></script>
+</body>
+</html>

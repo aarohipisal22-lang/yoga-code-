@@ -1,0 +1,26 @@
+/* Styles for login, dashboard, profile and photo features (uses the page's colour variables) */
+.btn-nav { border: 1.5px solid rgba(74,46,42,0.18); color: var(--ink); border-radius: var(--radius-sm); font-weight: 600; background: var(--surface); }
+.btn-nav:hover, .btn-nav.show { border-color: var(--primary); color: var(--primary-dark); background: var(--primary-soft); }
+.nav-avatar { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; flex: none; }
+.nav-avatar-initial { display: inline-flex; align-items: center; justify-content: center; background: var(--primary); color: #fff; font-weight: 700; font-size: .8rem; }
+.prof-avatar { width: 72px; height: 72px; border-radius: 50%; object-fit: cover; font-size: 1.8rem; display: inline-flex; align-items: center; justify-content: center; }
+.pose-illustration { display: block; width: 100%; max-width: 220px; margin: 0 auto 14px; border-radius: var(--radius-sm); background: var(--bg); }
+
+.modal-content { border: none; border-radius: var(--radius-lg); background: var(--surface); }
+.modal-header { border-bottom: 1px solid rgba(74,46,42,0.08); }
+.modal-title { font-family: var(--font-display); color: var(--primary-dark); }
+.auth-tabs .nav-link { color: var(--ink-muted); font-weight: 700; border-radius: var(--radius-sm); }
+.auth-tabs .nav-link.active { background: var(--primary-soft); color: var(--primary-dark); }
+.form-control:focus, .form-select:focus { border-color: var(--primary); box-shadow: 0 0 0 .2rem rgba(255,111,97,.18); }
+
+.stat-card { background: var(--surface-soft); border-radius: var(--radius-md); padding: 14px; text-align: center; }
+.stat-card strong { display: block; font-family: var(--font-display); font-size: 1.7rem; color: var(--primary-dark); line-height: 1.1; }
+.stat-card small { color: var(--ink-muted); font-weight: 700; font-size: .68rem; text-transform: uppercase; letter-spacing: .03em; }
+.week-chart { display: flex; align-items: flex-end; gap: 10px; height: 110px; }
+.wk-col { flex: 1; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; }
+.wk-bar { width: 100%; max-width: 38px; background: var(--primary); border-radius: 6px 6px 2px 2px; min-height: 3px; }
+.wk-col small { color: var(--ink-muted); font-size: .7rem; }
+.photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; }
+.photo-tile { margin: 0; background: var(--bg); border-radius: var(--radius-sm); overflow: hidden; }
+.photo-tile img { width: 100%; aspect-ratio: 1; object-fit: cover; display: block; }
+.photo-tile figcaption { display: flex; justify-content: space-between; align-items: center; gap: 6px; padding: 6px 8px; color: var(--ink-muted); }

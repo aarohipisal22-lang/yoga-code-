@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Yoga-Code AI: About you</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Manrope:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/auth.css">
+</head>
+<body>
+<main class="auth-card wide">
+  <div class="brand mb-1"><i class="fa-solid fa-spa me-2"></i>Yoga-Code AI</div>
+  <h4 id="heading" class="mb-1">Welcome! Tell us about you</h4>
+  <p class="text-muted small">A few quick questions so your practice stays safe and suited to you. You only answer this once and can edit it later.</p>
+  <div id="formError" class="alert alert-danger py-2 small d-none" role="alert"></div>
+  <form id="healthForm">
+    <div class="row g-3">
+      <div class="col-6 col-md-3"><label class="form-label" for="age">Age</label><input id="age" type="number" class="form-control" min="5" max="120" required></div>
+      <div class="col-6 col-md-3"><label class="form-label" for="gender">Gender</label>
+        <select id="gender" class="form-select" required><option value="" selected disabled>Choose</option><option value="female">Female</option><option value="male">Male</option><option value="non-binary">Non-binary</option><option value="prefer not to say">Prefer not to say</option></select></div>
+      <div class="col-6 col-md-3"><label class="form-label" for="height">Height (cm)</label><input id="height" type="number" step="0.1" min="50" max="260" class="form-control" required></div>
+      <div class="col-6 col-md-3"><label class="form-label" for="weight">Weight (kg)</label><input id="weight" type="number" step="0.1" min="15" max="400" class="form-control" required></div>
+      <div class="col-12"><div id="bmi" class="bmi-note d-none"></div></div>
+      <div class="col-12">
+        <label class="form-label d-block">Do you have any past medical history?</label>
+        <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="hist" id="histNo" value="no" required><label class="form-check-label" for="histNo">No</label></div>
+        <div class="form-check form-check-inline"><input class="form-check-input" type="radio" name="hist" id="histYes" value="yes"><label class="form-check-label" for="histYes">Yes</label></div>
+      </div>
+      <div id="historyBlock" class="col-12 d-none">
+        <label class="form-label">Select any that apply</label>
+        <div class="chip-grid mb-3" id="conds"></div>
+        <label class="form-label" for="details">Tell us more (past illnesses, injuries, surgeries)</label>
+        <textarea id="details" class="form-control mb-3" rows="3" maxlength="1000" placeholder="e.g. Knee surgery in 2022, mild asthma"></textarea>
+        <label class="form-label" for="meds">Current medications (optional)</label>
+        <input id="meds" class="form-control" maxlength="300">
+      </div>
+    </div>
+    <p class="small text-muted mt-3"><i class="fa-solid fa-circle-info me-1"></i>This app is for general wellness and is not medical advice. If you have a health condition, check with your doctor before starting a new exercise routine.</p>
+    <div class="d-flex gap-2">
+      <button id="skipBack" class="btn btn-outline-secondary d-none" type="button" onclick="location.href='/index.html'">Cancel</button>
+      <button class="btn btn-brand flex-grow-1" type="submit" id="saveBtn">Save and start practising</button>
+    </div>
+  </form>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="js/common.js"></script>
+<script>
+const $ = (id) => document.getElementById(id), err = $('formError');
+const CONDS = ['diabetes','high blood pressure','heart condition','asthma','back pain','knee or joint problems','arthritis','thyroid','pregnancy','recent surgery','injury'];
+$('conds').innerHTML = CONDS.map((c, i) => `<div class="form-check"><input class="form-check-input" type="checkbox" id="c${i}" value="${c}"><label for="c${i}">${c[0].toUpperCase() + c.slice(1)}</label></div>`).join('');
+const hist = () => (document.querySelector('input[name=hist]:checked') || {}).value;
+document.querySelectorAll('input[name=hist]').forEach((r) => r.addEventListener('change', () => $('historyBlock').classList.toggle('d-none', hist() !== 'yes')));
+function bmi() {
+  const h = parseFloat($('height').value) / 100, w = parseFloat($('weight').value), b = $('bmi');
+  if (h > 0.5 && w > 0) { b.textContent = `BMI: ${(w / (h * h)).toFixed(1)} (a rough guide only)`; b.classList.remove('d-none'); } else b.classList.add('d-none');
+}
+$('height').addEventListener('input', bmi); $('weight').addEventListener('input', bmi);
+
+let editing = false;
+(async () => {
+  try {
+    const { user } = await api('/me');
+    if (!user) return location.replace('/login.html');
+    const { health: h } = await api('/me/health');
+    if (h) {
+      editing = true; $('heading').textContent = 'Your health profile'; $('skipBack').classList.remove('d-none'); $('saveBtn').textContent = 'Save changes';
+      $('age').value = h.age; $('gender').value = h.gender; $('height').value = h.height_cm; $('weight').value = h.weight_kg;
+      $(h.has_history ? 'histYes' : 'histNo').checked = true;
+      $('historyBlock').classList.toggle('d-none', !h.has_history);
+      document.querySelectorAll('#conds input').forEach((c) => { c.checked = h.conditions.includes(c.value); });
+      $('details').value = h.details; $('meds').value = h.medications; bmi();
+    } else { $('heading').textContent = `Welcome, ${user.username}! Tell us about you`; }
+  } catch (ex) { showError(err, ex.message); }
+})();
+
+$('healthForm').addEventListener('submit', async (e) => {
+  e.preventDefault(); showError(err, '');
+  const yes = hist() === 'yes';
+  $('saveBtn').disabled = true;
+  try {
+    await api('/me/health', { method: 'PUT', json: {
+      age: parseInt($('age').value, 10), gender: $('gender').value,
+      height_cm: parseFloat($('height').value), weight_kg: parseFloat($('weight').value),
+      has_history: yes,
+      conditions: yes ? [...document.querySelectorAll('#conds input:checked')].map((c) => c.value) : [],
+      details: yes ? $('details').value : '', medications: yes ? $('meds').value : '' } });
+    location.replace('/index.html');
+  } catch (ex) { showError(err, ex.message); window.scrollTo(0, 0); } finally { $('saveBtn').disabled = false; }
+});
+</script>
+</body>
+</html>

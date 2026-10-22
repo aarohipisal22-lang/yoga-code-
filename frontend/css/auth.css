@@ -1,0 +1,20 @@
+:root{--bg:#FFF6EF;--surface:#fff;--surface-soft:#FFE8DC;--ink:#4A2E2A;--ink-muted:#9A7A73;--primary:#FF6F61;--primary-dark:#E8503F;--primary-soft:#FFE1DA;--accent:#FF9F1C;--radius-sm:10px;--radius-md:16px;--radius-lg:22px;--font-display:'Fraunces',Georgia,serif;--font-body:'Manrope',-apple-system,sans-serif}
+body{font-family:var(--font-body);background:linear-gradient(160deg,var(--bg),var(--surface-soft));color:var(--ink);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+h1,h2,h3,h4,h5{font-family:var(--font-display);color:var(--primary-dark)}
+.auth-card{background:var(--surface);border-radius:var(--radius-lg);box-shadow:0 10px 30px rgba(74,46,42,.14);padding:32px;width:100%;max-width:440px}
+.auth-card.wide{max-width:640px}
+.brand{font-family:var(--font-display);font-weight:600;font-size:1.4rem;color:var(--primary-dark)}
+.brand i{color:var(--accent)}
+.btn-brand{background:var(--primary);border-color:var(--primary);color:#fff;font-weight:700;border-radius:var(--radius-sm)}
+.btn-brand:hover,.btn-brand:disabled{background:var(--primary-dark);border-color:var(--primary-dark);color:#fff}
+.auth-tabs .nav-link{color:var(--ink-muted);font-weight:700;border-radius:var(--radius-sm)}
+.auth-tabs .nav-link.active{background:var(--primary-soft);color:var(--primary-dark)}
+.form-control:focus,.form-select:focus,.form-check-input:focus{border-color:var(--primary);box-shadow:0 0 0 .2rem rgba(255,111,97,.18)}
+.form-check-input:checked{background-color:var(--primary);border-color:var(--primary)}
+.form-label{font-weight:700;font-size:.85rem}
+.chip-grid{display:flex;flex-wrap:wrap;gap:8px}
+.chip-grid .form-check{padding:0;margin:0}
+.chip-grid .form-check-input{display:none}
+.chip-grid label{border:1.5px solid rgba(74,46,42,.15);border-radius:999px;padding:6px 14px;font-size:.85rem;cursor:pointer;font-weight:600}
+.chip-grid .form-check-input:checked+label{background:var(--primary-soft);border-color:var(--primary);color:var(--primary-dark)}
+.bmi-note{background:var(--surface-soft);border-radius:var(--radius-sm);padding:8px 12px;font-size:.85rem}
